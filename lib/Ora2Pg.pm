@@ -53,10 +53,10 @@ our %TYPE = (
 	# VARCHAR types the limit is 2000 bytes in Oracle 7 and 4000 in
 	# Oracle 8. PG varchar type has max length iset to 8104 so it
 	# should match all needs
-	'VARCHAR' => 'varchar',
-	'NVARCHAR' => 'varchar',
-	'VARCHAR2' => 'varchar',
-	'NVARCHAR2' => 'varchar',
+	'VARCHAR' => 'text',
+	'NVARCHAR' => 'text',
+	'VARCHAR2' => 'text',
+	'NVARCHAR2' => 'text',
 	# The DATE data type is used to store the date and time
 	# information. PG type timestamp should match all needs.
 	'DATE' => 'timestamp',
@@ -83,12 +83,12 @@ our %TYPE = (
 	'DEC' => 'decimal',
 	'DECIMAL' => 'decimal',
 	'DOUBLE PRECISION' => 'double precision',
-	'INT' => 'integer',
-	'INTEGER' => 'integer',
-	'BINARY_INTEGER' => 'integer',
-	'PLS_INTEGER' => 'integer',
+	'INT' => 'numeric',
+	'INTEGER' => 'numeric',
+	'BINARY_INTEGER' => 'numeric',
+	'PLS_INTEGER' => 'numeric',
 	'REAL' => 'real',
-	'SMALLINT' => 'smallint',
+	'SMALLINT' => 'numeric',
 	'BINARY_FLOAT' => 'double precision',
 	'BINARY_DOUBLE' => 'double precision',
 	'TIMESTAMP' => 'timestamp',
@@ -585,7 +585,7 @@ sub _init
 		$self->{prefix} = 'ALL';
 	}
 	$self->{bzip2} ||= '/usr/bin/bzip2';
-	$self->{default_numeric} ||= 'bigint';
+	$self->{default_numeric} ||= 'numeric';
 	$self->{type_of_type} = ();
 	$self->{dump_as_html} ||= 0;
 
@@ -3562,24 +3562,26 @@ sub _sql_type
 				# Type CHAR have default length set to 1
 				# Type VARCHAR(2) must have a specified length
 				$len = 1 if (!$len && ($type eq "CHAR"));
-                		return "$TYPE{$type}($len)";
+                		return "$TYPE{$type}";
+				#$type = "TEXT";
+				#return "$TYPE{$type}";
 			} elsif ($type eq "NUMBER") {
 				# This is an integer
 				if (!$scale) {
 					if ($precision) {
 						if ($self->{pg_integer_type}) {
 							if ($precision < 5) {
-								return 'smallint';
+								return 'numeric';
 							} elsif ($precision <= 9) {
-								return 'integer'; # The speediest in PG
+								return 'numeric'; # The speediest in PG
 							} else {
-								return 'bigint';
+								return 'numeric';
 							}
 						}
 						return "numeric($precision)";
 					} elsif ($self->{pg_integer_type}) {
 						# Most of the time interger should be enought?
-						return $self->{default_numeric} || 'bigint';
+						return $self->{default_numeric} || 'numeric';
 					}
 				} else {
 					if ($precision) {
