@@ -48,8 +48,8 @@ our %TYPE = (
 	# CHAR types limit of 2000 bytes with defaults to 1 if no length
 	# is specified. PG char type has max length set to 8104 so it
 	# should match all needs
-	'CHAR' => 'char',
-	'NCHAR' => 'char',
+	'CHAR' => 'text',
+	'NCHAR' => 'text',
 	# VARCHAR types the limit is 2000 bytes in Oracle 7 and 4000 in
 	# Oracle 8. PG varchar type has max length iset to 8104 so it
 	# should match all needs
@@ -2982,6 +2982,8 @@ sub _create_indexes
 			my $unique = '';
 			$unique = ' UNIQUE' if ($self->{tables}{$table}{uniqueness}{$idx} eq 'UNIQUE');
 			my $str = '';
+			#Added to avoid index and relations with the same name, which are not valid on PosgreSQL
+			$idx .="_idx";
 			if (!$self->{preserve_case}) {
 				$table = $self->quote_reserved_words($table);
 				$str .= "CREATE$unique INDEX \L$idx\E ON \L$table\E (\L$columns\E);";
